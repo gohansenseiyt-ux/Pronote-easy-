@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pronote Easy ⚡</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #080810;
+  --surface: #10101c;
+  --surface2: #181828;
+  --border: #252538;
+  --accent: #7c5cfc;
+  --accent2: #fc5c7d;
+  --accent3: #5cf4d0;
+  --accent4: #fcb85c;
+  --text: #e8e8f4;
+  --muted: #5a5a7a;
+  --card-a: #14102a;
+  --card-b: #0e1e18;
+  --card-c: #1e0e18;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: var(--bg); color: var(--text); font-family: 'DM Mono', monospace; min-height: 100vh; overflow-x: hidden; }
+body::before { content:''; position:fixed; inset:0; background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E"); pointer-events:none; z-index:9999; }
+
+header { display:flex; align-items:center; justify-content:space-between; padding:16px 28px; border-bottom:1px solid var(--border); position:sticky; top:0; background:rgba(8,8,16,0.92); backdrop-filter:blur(16px); z-index:200; gap:12px; flex-wrap:wrap; }
+.logo { font-family:'Syne',sans-serif; font-size:1.3rem; font-weight:800; letter-spacing:-0.5px; white-space:nowrap; }
+.logo .l1 { color:var(--accent); } .logo .l2 { color:var(--accent2); }
+.nav-tabs { display:flex; gap:3px; background:var(--surface); padding:4px; border-radius:12px; border:1px solid var(--border); flex-wrap:wrap; }
+.nav-tab { padding:7px 14px; border-radius:8px; border:none; background:transparent; color:var(--muted); font-family:'DM Mono',monospace; font-size:0.72rem; cursor:pointer; transition:all 0.2s; white-space:nowrap; }
+.nav-tab.active { background:var(--accent); color:#fff; }
+.nav-tab:hover:not(.active) { color:var(--text); background:var(--surface2); }
+
+main { padding:28px; max-width:1150px; margin:0 auto; }
+.page { display:none; animation:fadeIn 0.25s ease; }
+.page.active { display:block; }
+@keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+
+.section-title { font-family:'Syne',sans-serif; font-size:1.7rem; font-weight:800; margin-bottom:6px; letter-spacing:-0.5px; }
+.section-sub { color:var(--muted); font-size:0.75rem; margin-bottom:24px; letter-spacing:0.5px; }
+
+.input-zone { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:18px; margin-bottom:14px; transition:border-color 0.2s; }
+.input-zone:focus-within { border-color:var(--accent); }
+.input-zone label { display:block; font-size:0.65rem; color:var(--muted); letter-spacing:1.2px; text-transform:uppercase; margin-bottom:8px; }
+.input-zone textarea { width:100%; background:transparent; border:none; outline:none; color:var(--text); font-family:'DM Mono',monospace; font-size:0.82rem; line-height:1.7; resize:vertical; min-height:130px; }
+.input-zone textarea::placeholder { color:var(--muted); }
+
+.row { display:flex; gap:10px; margin-bottom:14px; align-items:center; flex-wrap:wrap; }
+.input-small { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:11px 14px; color:var(--text); font-family:'DM Mono',monospace; font-size:0.78rem; outline:none; transition:border-color 0.2s; flex:1; min-width:100px; }
+.input-small:focus { border-color:var(--accent); }
+
+.btn { padding:11px 22px; border-radius:10px; border:none; font-family:'DM Mono',monospace; font-size:0.78rem; font-weight:500; cursor:pointer; transition:all 0.2s; letter-spacing:0.3px; white-space:nowrap; display:inline-flex; align-items:center; gap:6px; }
+.btn-primary { background:var(--accent); color:#fff; }
+.btn-primary:hover { background:#9070ff; transform:translateY(-1px); box-shadow:0 6px 20px rgba(124,92,252,0.35); }
+.btn-green { background:var(--accent3); color:#000; }
+.btn-green:hover { background:#80ffdf; transform:translateY(-1px); }
+.btn-orange { background:var(--accent4); color:#000; }
+.btn-orange:hover { background:#ffd080; transform:translateY(-1px); }
+.btn-outline { background:transparent; color:var(--muted); border:1px solid var(--border); }
+.btn-outline:hover { border-color:var(--accent); color:var(--accent); }
+.btn-sm { padding:7px 14px; font-size:0.7rem; }
+
+.loading { display:flex; align-items:center; gap:10px; padding:16px; color:var(--muted); font-size:0.78rem; }
+.spinner { width:18px; height:18px; border:2px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin 0.7s linear infinite; flex-shrink:0; }
+@keyframes spin { to{transform:rotate(360deg)} }
+
+.upload-zone { border:2px dashed var(--border); border-radius:14px; padding:28px; text-align:center; cursor:pointer; transition:all 0.25s; background:var(--surface); margin-bottom:14px; }
+.upload-zone:hover { border-color:var(--accent); background:var(--card-a); }
+.upload-icon { font-size:2rem; margin-bottom:8px; }
+.upload-text { font-size:0.8rem; color:var(--muted); }
+.upload-text span { color:var(--accent); }
+.upload-preview { max-width:100%; max-height:200px; border-radius:10px; margin-top:10px; border:1px solid var(--border); object-fit:contain; }
+
+.card { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:20px; }
+.card+.card { margin-top:14px; }
+.card-title { font-family:'Syne',sans-serif; font-weight:700; font-size:0.95rem; margin-bottom:14px; }
+
+.combo-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; margin-top:20px; }
+@media(max-width:720px){ .combo-grid{grid-template-columns:1fr} }
+.combo-card { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:18px; transition:transform 0.2s; }
+.combo-card:hover { transform:translateY(-2px); }
+.combo-card.card-a { border-color:rgba(124,92,252,0.4); background:var(--card-a); }
+.combo-card.card-b { border-color:rgba(92,244,208,0.4); background:var(--card-b); }
+.combo-card.card-c { border-color:rgba(252,92,125,0.4); background:var(--card-c); }
+.card-badge { font-family:'Syne',sans-serif; font-size:1.6rem; font-weight:800; margin-bottom:4px; }
+.card-a .card-badge { color:var(--accent); } .card-b .card-badge { color:var(--accent3); } .card-c .card-badge { color:var(--accent2); }
+.card-label { font-size:0.62rem; text-transform:uppercase; letter-spacing:1px; color:var(--muted); margin-bottom:14px; }
+.card-content { font-size:0.8rem; line-height:1.8; white-space:pre-wrap; }
+
+.quiz-item { margin-bottom:10px; padding:12px; background:var(--surface2); border-radius:8px; border:1px solid var(--border); font-size:0.78rem; cursor:pointer; transition:all 0.2s; }
+.quiz-item:hover { border-color:var(--accent2); }
+.quiz-q { color:var(--accent2); margin-bottom:6px; font-weight:500; }
+.quiz-a { color:var(--muted); display:none; }
+.quiz-a.revealed { display:block; color:var(--accent3); }
+
+.notes-layout { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+@media(max-width:700px){ .notes-layout{grid-template-columns:1fr} }
+.note-card { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:16px; position:relative; transition:all 0.2s; }
+.note-card:hover { border-color:var(--accent); transform:translateY(-1px); }
+.note-matiere { font-size:0.65rem; text-transform:uppercase; letter-spacing:1px; color:var(--accent); margin-bottom:6px; }
+.note-value { font-family:'Syne',sans-serif; font-size:2.2rem; font-weight:800; margin-bottom:2px; }
+.note-good { color:var(--accent3); } .note-avg { color:var(--accent4); } .note-bad { color:var(--accent2); }
+.note-coeff { font-size:0.68rem; color:var(--muted); }
+.note-date { font-size:0.65rem; color:var(--muted); position:absolute; top:14px; right:14px; }
+.note-delete { position:absolute; bottom:12px; right:12px; background:none; border:none; color:var(--muted); cursor:pointer; font-size:0.75rem; transition:color 0.2s; }
+.note-delete:hover { color:var(--accent2); }
+
+.moyenne-bar { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:20px; margin-bottom:20px; display:flex; align-items:center; gap:20px; flex-wrap:wrap; }
+.moyenne-val { font-family:'Syne',sans-serif; font-size:3rem; font-weight:800; line-height:1; }
+.moyenne-label { font-size:0.65rem; color:var(--muted); text-transform:uppercase; letter-spacing:1px; }
+.moyenne-sub { font-size:0.75rem; color:var(--muted); margin-top:4px; }
+
+.devoir-item { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:16px 18px; margin-bottom:10px; display:flex; align-items:flex-start; gap:14px; transition:all 0.2s; position:relative; }
+.devoir-item:hover { border-color:var(--accent); }
+.devoir-item.done { opacity:0.4; }
+.devoir-item.done .devoir-title { text-decoration:line-through; }
+.urgence-bar { width:4px; border-radius:2px; flex-shrink:0; align-self:stretch; }
+.urg-1 { background:var(--accent2); } .urg-2 { background:var(--accent4); } .urg-3 { background:var(--accent3); }
+.devoir-check { width:20px; height:20px; border:2px solid var(--border); border-radius:6px; cursor:pointer; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:0.65rem; transition:all 0.2s; margin-top:2px; }
+.devoir-check.checked { background:var(--accent3); border-color:var(--accent3); color:#000; }
+.devoir-body { flex:1; }
+.devoir-meta { display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-bottom:4px; }
+.devoir-matiere { font-size:0.65rem; text-transform:uppercase; letter-spacing:1px; color:var(--accent); }
+.devoir-deadline { font-size:0.65rem; color:var(--muted); }
+.devoir-title { font-size:0.85rem; line-height:1.5; }
+.devoir-score { font-family:'Syne',sans-serif; font-size:0.7rem; font-weight:700; padding:3px 8px; border-radius:6px; flex-shrink:0; margin-top:2px; }
+.score-high { background:rgba(252,92,125,0.2); color:var(--accent2); }
+.score-med  { background:rgba(252,184,92,0.2); color:var(--accent4); }
+.score-low  { background:rgba(92,244,208,0.2); color:var(--accent3); }
+.devoir-del { position:absolute; top:10px; right:12px; background:none; border:none; color:var(--muted); cursor:pointer; font-size:0.72rem; }
+.devoir-del:hover { color:var(--accent2); }
+
+.tag { display:inline-block; padding:3px 8px; border-radius:5px; font-size:0.62rem; letter-spacing:0.5px; }
+.tag-purple { background:rgba(124,92,252,0.15); color:var(--accent); border:1px solid rgba(124,92,252,0.3); }
+.tag-green  { background:rgba(92,244,208,0.1); color:var(--accent3); border:1px solid rgba(92,244,208,0.3); }
+.tag-red    { background:rgba(252,92,125,0.1); color:var(--accent2); border:1px solid rgba(252,92,125,0.3); }
+.tag-orange { background:rgba(252,184,92,0.1); color:var(--accent4); border:1px solid rgba(252,184,92,0.3); }
+
+.timer-card { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:22px; text-align:center; }
+.timer-display { font-family:'Syne',sans-serif; font-size:3.2rem; font-weight:800; letter-spacing:-2px; color:var(--accent); margin:10px 0; transition:color 0.3s; }
+.timer-display.warning { color:var(--accent2); }
+.timer-label { font-size:0.62rem; text-transform:uppercase; letter-spacing:1.5px; color:var(--muted); }
+.timer-presets { display:flex; gap:6px; justify-content:center; margin:12px 0; flex-wrap:wrap; }
+.preset-btn { padding:5px 12px; border-radius:6px; border:1px solid var(--border); background:transparent; color:var(--muted); font-family:'DM Mono',monospace; font-size:0.7rem; cursor:pointer; transition:all 0.2s; }
+.preset-btn.selected,.preset-btn:hover { border-color:var(--accent); color:var(--accent); }
+.timer-btns { display:flex; gap:8px; justify-content:center; }
+.progress-bar { height:3px; background:var(--border); border-radius:2px; margin-top:14px; overflow:hidden; }
+.progress-fill { height:100%; background:linear-gradient(90deg,var(--accent),var(--accent2)); border-radius:2px; transition:width 0.8s ease; }
+
+.priority-card { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:18px; }
+.priority-item { display:flex; align-items:center; gap:10px; padding:9px 0; border-bottom:1px solid var(--border); font-size:0.78rem; }
+.priority-item:last-child { border-bottom:none; }
+.priority-dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
+.dot-high{background:var(--accent2);} .dot-med{background:var(--accent);} .dot-low{background:var(--accent3);}
+.priority-name { flex:1; }
+.priority-time { color:var(--muted); font-size:0.7rem; }
+.priority-done { width:16px; height:16px; border:1px solid var(--border); border-radius:4px; cursor:pointer; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:0.6rem; transition:all 0.2s; }
+.priority-done.checked { background:var(--accent3); border-color:var(--accent3); color:#000; }
+.priority-item.done .priority-name { text-decoration:line-through; color:var(--muted); }
+
+.memoire-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(270px,1fr)); gap:12px; margin-top:8px; }
+.memoire-card { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:14px; transition:all 0.2s; position:relative; }
+.memoire-card:hover { border-color:var(--accent); transform:translateY(-1px); }
+.memoire-subject { font-size:0.62rem; text-transform:uppercase; letter-spacing:1px; color:var(--accent); margin-bottom:6px; }
+.memoire-phrase { font-size:0.82rem; line-height:1.6; font-style:italic; }
+.memoire-actions { margin-top:10px; }
+.copy-btn { padding:4px 10px; border-radius:6px; border:1px solid var(--border); background:transparent; color:var(--muted); font-family:'DM Mono',monospace; font-size:0.62rem; cursor:pointer; transition:all 0.2s; }
+.copy-btn:hover,.copy-btn.copied { border-color:var(--accent3); color:var(--accent3); }
+.delete-btn-abs { position:absolute; top:10px; right:10px; width:18px; height:18px; border-radius:4px; border:none; background:transparent; color:var(--muted); cursor:pointer; font-size:0.65rem; display:flex; align-items:center; justify-content:center; transition:all 0.2s; }
+.delete-btn-abs:hover { background:rgba(252,92,125,0.2); color:var(--accent2); }
+
+.history-item { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:13px 16px; margin-bottom:8px; display:flex; align-items:center; gap:14px; cursor:pointer; transition:all 0.2s; }
+.history-item:hover { border-color:var(--accent); }
+.history-subject { font-family:'Syne',sans-serif; font-weight:700; font-size:0.85rem; flex:1; }
+.history-date { color:var(--muted); font-size:0.68rem; }
+
+.fiche-section { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:18px; margin-bottom:12px; }
+.fiche-section h3 { font-family:'Syne',sans-serif; font-weight:700; color:var(--accent); margin-bottom:10px; font-size:0.95rem; }
+.fiche-section pre { white-space:pre-wrap; font-family:'DM Mono',monospace; font-size:0.8rem; line-height:1.7; }
+.fiche-section ul { padding-left:16px; }
+.fiche-section li { font-size:0.82rem; line-height:1.8; }
+
+.empty { text-align:center; padding:50px 20px; color:var(--muted); font-size:0.78rem; }
+.empty-icon { font-size:2.5rem; margin-bottom:10px; opacity:0.4; }
+.stat-val { font-family:'Syne',sans-serif; font-size:2rem; font-weight:800; }
+
+.modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.75); z-index:500; align-items:center; justify-content:center; padding:20px; }
+.modal-overlay.open { display:flex; }
+.modal { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:24px; max-width:580px; width:100%; max-height:82vh; overflow-y:auto; position:relative; }
+.modal-close { position:absolute; top:14px; right:14px; background:none; border:none; color:var(--muted); cursor:pointer; font-size:1.1rem; }
+.modal-title { font-family:'Syne',sans-serif; font-weight:800; font-size:1.1rem; margin-bottom:16px; }
+
+.toast { position:fixed; bottom:22px; right:22px; background:var(--surface2); border:1px solid var(--accent3); border-radius:10px; padding:11px 18px; font-size:0.78rem; color:var(--accent3); transform:translateY(100px); opacity:0; transition:all 0.3s; z-index:9000; }
+.toast.show { transform:translateY(0); opacity:1; }
+
+.focus-grid { display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-bottom:18px; }
+@media(max-width:640px){ .focus-grid{grid-template-columns:1fr} }
+
+::-webkit-scrollbar { width:5px; }
+::-webkit-scrollbar-track { background:var(--bg); }
+::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
+::-webkit-scrollbar-thumb:hover { background:var(--accent); }
+
+select.input-small { appearance:none; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">pronote <span class="l1">easy</span> <span class="l2">⚡</span></div>
+  <nav class="nav-tabs">
+    <button class="nav-tab active"  onclick="switchPage('converter',this)">⚡ Cours</button>
+    <button class="nav-tab"        onclick="switchPage('notes',this)">📊 Notes</button>
+    <button class="nav-tab"        onclick="switchPage('devoirs',this)">📋 Devoirs</button>
+    <button class="nav-tab"        onclick="switchPage('focus',this)">🎯 Focus</button>
+    <button class="nav-tab"        onclick="switchPage('memoire',this)">🧠 Mémoire</button>
+  </nav>
+</header>
+
+<main>
+
+<!-- PAGE COURS -->
+<div class="page active" id="page-converter">
+  <div class="section-title">⚡ Analyse de <span style="color:var(--accent)">Cours</span></div>
+  <div class="section-sub">// TEXTE OU CAPTURE D'ÉCRAN → FICHE + QUIZ EN QUELQUES SECONDES</div>
+
+  <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+    <button class="btn btn-primary btn-sm" id="mode-text-btn" onclick="setCourseMode('text',this)">📝 Texte</button>
+    <button class="btn btn-outline btn-sm" id="mode-img-btn"  onclick="setCourseMode('image',this)">📸 Capture d'écran</button>
+  </div>
+
+  <div id="course-text-mode">
+    <div class="row">
+      <input class="input-small" id="subject-input" placeholder="Matière (ex: Physique — Thalès)"/>
+      <select class="input-small" id="output-type" style="flex:0.9">
+        <option value="combo">Fiche A+B+C + Quiz</option>
+        <option value="fiche">Fiche de révision</option>
+        <option value="quiz">Quiz (5 questions)</option>
+        <option value="mindmap">Plan structuré</option>
+      </select>
+      <button class="btn btn-primary" onclick="runCourse()">⚡ Analyser</button>
+    </div>
+    <div class="input-zone">
+      <label>COURS À ANALYSER</label>
+      <textarea id="course-text" placeholder="Colle ton cours ici...&#10;&#10;Ex: Le théorème de Thalès stipule que..."></textarea>
+    </div>
+  </div>
+
+  <div id="course-img-mode" style="display:none">
+    <div class="row">
+      <input class="input-small" id="subject-input-img" placeholder="Matière (ex: Maths — Thalès)"/>
+      <select class="input-small" id="output-type-img" style="flex:0.9">
+        <option value="combo">Fiche A+B+C + Quiz</option>
+        <option value="fiche">Fiche de révision</option>
+        <option value="quiz">Quiz (5 questions)</option>
+        <option value="mindmap">Plan structuré</option>
+      </select>
+      <button class="btn btn-green" onclick="runCourseFromImage()">📸 Analyser l'image</button>
+    </div>
+    <div class="upload-zone" onclick="document.getElementById('course-img-input').click()">
+      <input type="file" id="course-img-input" accept="image/*" onchange="handleCourseImage(event)" style="display:none">
+      <div class="upload-icon">📷</div>
+      <div class="upload-text">Clique ou glisse ta <span>capture de cours</span></div>
+      <div style="font-size:0.68rem;color:var(--muted);margin-top:4px">Photo de cahier, screenshot Pronote, page de manuel...</div>
+      <img id="course-img-preview" class="upload-preview" style="display:none">
+    </div>
+  </div>
+
+  <div id="course-loading" style="display:none">
+    <div class="loading"><div class="spinner"></div> L'IA analyse ton cours...</div>
+  </div>
+
+  <div id="course-result" style="display:none">
+    <div id="combo-view">
+      <div class="combo-grid">
+        <div class="combo-card card-a">
+          <div class="card-badge">A</div>
+          <div class="card-label">L'ESSENTIEL — CE QU'IL FAUT SAVOIR</div>
+          <div class="card-content" id="card-a-content"></div>
+        </div>
+        <div class="combo-card card-b">
+          <div class="card-badge">B</div>
+          <div class="card-label">MOTS-CLÉS & DÉFINITIONS</div>
+          <div class="card-content" id="card-b-content"></div>
+        </div>
+        <div class="combo-card card-c">
+          <div class="card-badge">C</div>
+          <div class="card-label">QUIZ — CLIQUE POUR RÉVÉLER</div>
+          <div id="card-c-content"></div>
+        </div>
+      </div>
+    </div>
+    <div id="fiche-view" style="display:none"></div>
+    <div id="quiz-view" style="display:none"></div>
+    <div id="mindmap-view" style="display:none"></div>
+    <div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap">
+      <button class="btn btn-outline btn-sm" onclick="saveToHistory()">💾 Sauvegarder</button>
+      <button class="btn btn-outline btn-sm" onclick="sendToMemoire()">🧠 → Mémoire</button>
+    </div>
+  </div>
+
+  <div style="margin-top:28px">
+    <div style="font-size:0.65rem;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:10px">ANALYSES RÉCENTES</div>
+    <div id="history-list"></div>
+  </div>
+</div>
+
+<!-- PAGE NOTES -->
+<div class="page" id="page-notes">
+  <div class="section-title">📊 Mes <span style="color:var(--accent3)">Notes</span></div>
+  <div class="section-sub">// CAPTURE D'ÉCRAN PRONOTE → L'IA EXTRAIT TOUTES TES NOTES AUTOMATIQUEMENT</div>
+
+  <div class="moyenne-bar">
+    <div>
+      <div class="moyenne-label">MOYENNE GÉNÉRALE</div>
+      <div class="moyenne-val" id="moyenne-val" style="color:var(--accent3)">—</div>
+    </div>
+    <div style="flex:1">
+      <div class="progress-bar" style="height:6px"><div class="progress-fill" id="moyenne-bar-fill" style="width:0%"></div></div>
+      <div class="moyenne-sub" id="moyenne-sub">Aucune note</div>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn btn-green btn-sm" onclick="openModal('modal-note')">+ Ajouter</button>
+      <button class="btn btn-orange btn-sm" onclick="openModal('modal-note-img')">📸 Capture</button>
+    </div>
+  </div>
+
+  <div class="notes-layout" id="notes-grid"></div>
+  <div class="empty" id="notes-empty" style="display:none">
+    <div class="empty-icon">📊</div>
+    <div>Aucune note — ajoute-en ou envoie une capture Pronote !</div>
+  </div>
+</div>
+
+<!-- PAGE DEVOIRS -->
+<div class="page" id="page-devoirs">
+  <div class="section-title">📋 Mes <span style="color:var(--accent4)">Devoirs</span></div>
+  <div class="section-sub">// CAPTURE AGENDA PRONOTE → L'IA CLASSE PAR URGENCE AUTOMATIQUEMENT</div>
+
+  <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap">
+    <button class="btn btn-primary btn-sm" onclick="openModal('modal-devoir')">+ Ajouter manuellement</button>
+    <button class="btn btn-orange btn-sm" onclick="openModal('modal-devoir-img')">📸 Capture Pronote → IA</button>
+    <button class="btn btn-outline btn-sm" onclick="clearDoneDevoirs()">✓ Effacer terminés</button>
+  </div>
+
+  <div style="display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap">
+    <div style="display:flex;align-items:center;gap:6px;font-size:0.68rem;color:var(--muted)"><div style="width:10px;height:10px;border-radius:50%;background:var(--accent2)"></div> Urgent (&lt;2j)</div>
+    <div style="display:flex;align-items:center;gap:6px;font-size:0.68rem;color:var(--muted)"><div style="width:10px;height:10px;border-radius:50%;background:var(--accent4)"></div> Moyen (3-5j)</div>
+    <div style="display:flex;align-items:center;gap:6px;font-size:0.68rem;color:var(--muted)"><div style="width:10px;height:10px;border-radius:50%;background:var(--accent3)"></div> OK (&gt;5j)</div>
+  </div>
+
+  <div id="devoirs-list"></div>
+  <div class="empty" id="devoirs-empty" style="display:none">
+    <div class="empty-icon">📋</div>
+    <div>Aucun devoir — profites-en !</div>
+  </div>
+</div>
+
+<!-- PAGE FOCUS -->
+<div class="page" id="page-focus">
+  <div class="section-title">🎯 <span style="color:var(--accent)">Focus³</span></div>
+  <div class="section-sub">// TIMER POMODORO + PRIORITÉS DU JOUR</div>
+
+  <div class="focus-grid">
+    <div class="timer-card">
+      <div class="timer-label">SESSION DE RÉVISION</div>
+      <div class="timer-display" id="timer-display">25:00</div>
+      <div class="timer-presets">
+        <button class="preset-btn selected" onclick="setTimer(25,this)">25 min</button>
+        <button class="preset-btn" onclick="setTimer(45,this)">45 min</button>
+        <button class="preset-btn" onclick="setTimer(60,this)">60 min</button>
+        <button class="preset-btn" onclick="setTimer(5,this)">☕ 5 min</button>
+      </div>
+      <div class="timer-btns">
+        <button class="btn btn-primary btn-sm" id="timer-btn" onclick="toggleTimer()">▶ Démarrer</button>
+        <button class="btn btn-outline btn-sm" onclick="resetTimer()">↺ Reset</button>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="timer-progress" style="width:100%"></div></div>
+      <div style="margin-top:10px;font-size:0.68rem;color:var(--muted)">Sessions: <span id="session-count" style="color:var(--accent)">0</span></div>
+    </div>
+
+    <div class="priority-card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+        <div style="font-family:'Syne',sans-serif;font-weight:700">🎯 Priorités</div>
+        <button class="btn btn-outline btn-sm" onclick="clearDonePriorities()">Effacer ✓</button>
+      </div>
+      <div id="priority-list"></div>
+      <div class="row" style="margin-top:10px">
+        <input class="input-small" id="priority-name" placeholder="Matière / Chapitre..." style="flex:2"/>
+        <input class="input-small" id="priority-time" placeholder="Durée" style="flex:1"/>
+        <button class="btn btn-primary btn-sm" onclick="addPriority()">+</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📊 Statistiques</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;text-align:center">
+      <div><div class="stat-val" id="stat-sessions" style="color:var(--accent)">0</div><div style="font-size:0.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px">Sessions</div></div>
+      <div><div class="stat-val" id="stat-minutes" style="color:var(--accent3)">0</div><div style="font-size:0.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px">Minutes</div></div>
+      <div><div class="stat-val" id="stat-courses" style="color:var(--accent2)">0</div><div style="font-size:0.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px">Cours analysés</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE MÉMOIRE -->
+<div class="page" id="page-memoire">
+  <div class="section-title">🧠 Aide-<span style="color:var(--accent)">Mémoire</span></div>
+  <div class="section-sub">// TES PHRASES MAGIQUES AVANT CHAQUE CONTRÔLE</div>
+
+  <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
+    <button class="btn btn-primary btn-sm" onclick="toggleAddMemoire()">+ Ajouter</button>
+    <button class="btn btn-outline btn-sm" onclick="genMemoireFromLast()">✨ Depuis dernier cours</button>
+  </div>
+
+  <div id="add-memoire-form" style="display:none;margin-bottom:14px">
+    <div class="card">
+      <div class="row">
+        <input class="input-small" id="mem-subject" placeholder="Matière"/>
+        <input class="input-small" id="mem-phrase" placeholder="Phrase / Formule..." style="flex:3"/>
+        <button class="btn btn-primary btn-sm" onclick="addMemoire()">Ajouter</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="memoire-grid" id="memoire-grid"></div>
+  <div class="empty" id="memoire-empty" style="display:none">
+    <div class="empty-icon">🧠</div>
+    <div>Aucune phrase magique — ajoutes-en !</div>
+  </div>
+</div>
+
+</main>
+
+<!-- MODAL Note manuelle -->
+<div class="modal-overlay" id="modal-note">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modal-note')">✕</button>
+    <div class="modal-title">📊 Ajouter une note</div>
+    <div class="row">
+      <input class="input-small" id="note-matiere" placeholder="Matière (ex: Maths)"/>
+      <input class="input-small" id="note-chapitre" placeholder="Chapitre / Évaluation"/>
+    </div>
+    <div class="row">
+      <input class="input-small" id="note-val" placeholder="Note (ex: 14.5)" type="number" min="0" max="20" step="0.5"/>
+      <input class="input-small" id="note-sur" placeholder="Sur" type="number" value="20"/>
+      <input class="input-small" id="note-coeff" placeholder="Coeff" type="number" value="1" step="0.5"/>
+    </div>
+    <div class="row"><input class="input-small" id="note-date" type="date"/></div>
+    <button class="btn btn-primary" onclick="addNoteManual()">Ajouter la note</button>
+  </div>
+</div>
+
+<!-- MODAL Note image -->
+<div class="modal-overlay" id="modal-note-img">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modal-note-img')">✕</button>
+    <div class="modal-title">📸 Notes depuis capture</div>
+    <div style="color:var(--muted);font-size:0.78rem;margin-bottom:14px">Screenshot de tes notes Pronote → l'IA extrait tout automatiquement</div>
+    <div class="upload-zone" onclick="document.getElementById('note-img-input').click()">
+      <input type="file" id="note-img-input" accept="image/*" onchange="handleNoteImage(event)" style="display:none">
+      <div class="upload-icon">📱</div>
+      <div class="upload-text">Capture <span>Pronote Notes</span></div>
+      <img id="note-img-preview" class="upload-preview" style="display:none">
+    </div>
+    <div id="note-img-loading" style="display:none"><div class="loading"><div class="spinner"></div> Extraction des notes...</div></div>
+    <button class="btn btn-green" onclick="extractNotesFromImage()" style="margin-top:10px">⚡ Extraire les notes</button>
+  </div>
+</div>
+
+<!-- MODAL Devoir manuel -->
+<div class="modal-overlay" id="modal-devoir">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modal-devoir')">✕</button>
+    <div class="modal-title">📋 Ajouter un devoir</div>
+    <div class="row">
+      <input class="input-small" id="dev-matiere" placeholder="Matière"/>
+      <input class="input-small" id="dev-deadline" type="date"/>
+    </div>
+    <div class="row"><input class="input-small" id="dev-title" placeholder="Description du devoir..." style="flex:3"/></div>
+    <div class="row">
+      <select class="input-small" id="dev-urgence">
+        <option value="1">🔴 Urgent</option>
+        <option value="2" selected>🟡 Moyen</option>
+        <option value="3">🟢 Pas pressé</option>
+      </select>
+      <select class="input-small" id="dev-type">
+        <option>Exercice</option>
+        <option>Contrôle à préparer</option>
+        <option>Leçon à apprendre</option>
+        <option>Exposé</option>
+        <option>Autre</option>
+      </select>
+    </div>
+    <button class="btn btn-primary" onclick="addDevoirManual()">Ajouter</button>
+  </div>
+</div>
+
+<!-- MODAL Devoirs image -->
+<div class="modal-overlay" id="modal-devoir-img">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modal-devoir-img')">✕</button>
+    <div class="modal-title">📸 Devoirs depuis Pronote</div>
+    <div style="color:var(--muted);font-size:0.78rem;margin-bottom:14px">Capture de ton agenda Pronote → l'IA extrait et classe les devoirs par urgence (date, type, importance)</div>
+    <div class="upload-zone" onclick="document.getElementById('devoir-img-input').click()">
+      <input type="file" id="devoir-img-input" accept="image/*" onchange="handleDevoirImage(event)" style="display:none">
+      <div class="upload-icon">📅</div>
+      <div class="upload-text">Capture de <span>l'agenda Pronote</span></div>
+      <div style="font-size:0.68rem;color:var(--muted);margin-top:4px">L'IA analyse la date, la matière et classe par urgence</div>
+      <img id="devoir-img-preview" class="upload-preview" style="display:none">
+    </div>
+    <div id="devoir-img-loading" style="display:none"><div class="loading"><div class="spinner"></div> L'IA analyse et classe tes devoirs...</div></div>
+    <button class="btn btn-orange" onclick="extractDevoirsFromImage()" style="margin-top:10px">⚡ Extraire & Classer</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── STATE ──
+let state = {
+  history:    JSON.parse(localStorage.getItem('pe_history')    || '[]'),
+  memoire:    JSON.parse(localStorage.getItem('pe_memoire')    || '[]'),
+  priorities: JSON.parse(localStorage.getItem('pe_priorities') || '[]'),
+  notes:      JSON.parse(localStorage.getItem('pe_notes')      || '[]'),
+  devoirs:    JSON.parse(localStorage.getItem('pe_devoirs')    || '[]'),
+  stats:      JSON.parse(localStorage.getItem('pe_stats')      || '{"sessions":0,"minutes":0,"courses":0}'),
+  lastResult: null, lastSubject: '',
+  courseImageData: null, noteImageData: null, devoirImageData: null,
+};
+
+if (!state.memoire.length) {
+  state.memoire = [
+    { id:1, subject:'Maths — Thalès',  phrase:'Si deux droites sont coupées par des parallèles, les rapports des longueurs des segments sont égaux.' },
+    { id:2, subject:'Physique',        phrase:'F = m × a  →  Force = Masse × Accélération (Newton)' },
+    { id:3, subject:'SVT',             phrase:'Photosynthèse : CO₂ + H₂O + lumière → glucose + O₂' }
+  ];
+  save();
+}
+
+function save() {
+  ['history','memoire','priorities','notes','devoirs','stats'].forEach(k => localStorage.setItem('pe_'+k, JSON.stringify(state[k])));
+}
+
+// ── NAV ──
+function switchPage(name, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  if (btn) btn.classList.add('active');
+  if (name==='focus')   renderPriorities();
+  if (name==='memoire') renderMemoire();
+  if (name==='notes')   renderNotes();
+  if (name==='devoirs') renderDevoirs();
+}
+
+// ── COURS MODE ──
+function setCourseMode(mode, btn) {
+  document.querySelectorAll('#mode-text-btn,#mode-img-btn').forEach(b => {
+    b.classList.remove('btn-primary','btn-green','btn-outline');
+    b.classList.add('btn-outline');
+  });
+  if (mode==='text') {
+    btn.classList.replace('btn-outline','btn-primary');
+    document.getElementById('course-text-mode').style.display='block';
+    document.getElementById('course-img-mode').style.display='none';
+  } else {
+    btn.classList.replace('btn-outline','btn-green');
+    document.getElementById('course-text-mode').style.display='none';
+    document.getElementById('course-img-mode').style.display='block';
+  }
+}
+
+function handleCourseImage(e) {
+  const f = e.target.files[0]; if (!f) return;
+  const r = new FileReader();
+  r.onload = ev => {
+    state.courseImageData = ev.target.result.split(',')[1];
+    const img = document.getElementById('course-img-preview');
+    img.src = ev.target.result; img.style.display='block';
+  };
+  r.readAsDataURL(f);
+}
+
+// ── COURS API ──
+async function runCourse() {
+  const text = document.getElementById('course-text').value.trim();
+  if (!text) { showToast('⚠️ Colle un cours d\'abord !'); return; }
+  const subject = document.getElementById('subject-input').value.trim();
+  const type = document.getElementById('output-type').value;
+  await analyzeCourse(null, text, subject||'Cours', type);
+}
+
+async function runCourseFromImage() {
+  if (!state.courseImageData) { showToast('⚠️ Importe une image d\'abord !'); return; }
+  const subject = document.getElementById('subject-input-img').value.trim();
+  const type = document.getElementById('output-type-img').value;
+  await analyzeCourse(state.courseImageData, null, subject||'Cours', type);
+}
+
+const PROMPTS = {
+  combo: `Retourne UNIQUEMENT ce JSON (sans markdown) :
+{"A":"3 points essentiels numérotés séparés par \\n","B":"5 mots-clés: définition séparés par \\n","C":[{"q":"Q1?","a":"R1"},{"q":"Q2?","a":"R2"},{"q":"Q3?","a":"R3"}],"phrase_magique":"formule clé en une phrase"}`,
+  fiche: `Retourne UNIQUEMENT ce JSON (sans markdown) :
+{"type":"fiche","titre":"Titre du cours","sections":[{"h":"Titre","body":"contenu..."}],"phrase_magique":"formule clé"}`,
+  quiz:  `Retourne UNIQUEMENT ce JSON (sans markdown) :
+{"type":"quiz","questions":[{"q":"Q?","a":"R","diff":"facile"},{"q":"Q?","a":"R","diff":"moyen"},{"q":"Q?","a":"R","diff":"difficile"},{"q":"Q?","a":"R","diff":"moyen"},{"q":"Q?","a":"R","diff":"facile"}],"phrase_magique":"formule clé"}`,
+  mindmap:`Retourne UNIQUEMENT ce JSON (sans markdown) :
+{"type":"mindmap","titre":"Titre","axes":[{"label":"Axe 1","points":["a","b","c"]},{"label":"Axe 2","points":["d","e"]}],"phrase_magique":"formule clé"}`
+};
+
+async function analyzeCourse(imgB64, text, subject, type) {
+  document.getElementById('course-loading').style.display='block';
+  document.getElementById('course-result').style.display='none';
+
+  const prompt = `Matière: ${subject}\n\n${PROMPTS[type]}`;
+  const userContent = imgB64
+    ? [{ type:'image', source:{type:'base64',media_type:'image/jpeg',data:imgB64} }, { type:'text', text:`Lis ce cours et ${prompt}` }]
+    : `${text}\n\n${prompt}`;
+
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:1000, messages:[{role:'user',content:userContent}] })
+    });
+    const data = await resp.json();
+    const raw = data.content.map(i=>i.text||'').join('');
+    const parsed = JSON.parse(raw.replace(/```json|```/g,'').trim());
+    state.lastResult = parsed; state.lastSubject = subject;
+    state.stats.courses++; save(); updateStats();
+    renderCourseResult(parsed, type);
+    document.getElementById('course-loading').style.display='none';
+    document.getElementById('course-result').style.display='block';
+    showToast('✅ Analyse terminée !');
+  } catch(e) {
+    document.getElementById('course-loading').style.display='none';
+    showToast('❌ Erreur API. Vérifie ta connexion.'); console.error(e);
+  }
+}
+
+function renderCourseResult(parsed, type) {
+  ['combo-view','fiche-view','quiz-view','mindmap-view'].forEach(id => document.getElementById(id).style.display='none');
+  if (type==='combo') {
+    document.getElementById('combo-view').style.display='block';
+    document.getElementById('card-a-content').textContent = parsed.A;
+    document.getElementById('card-b-content').textContent = parsed.B;
+    const qc = document.getElementById('card-c-content'); qc.innerHTML='';
+    parsed.C.forEach((item,i) => {
+      const d = document.createElement('div'); d.className='quiz-item';
+      d.innerHTML=`<div class="quiz-q">Q${i+1}. ${item.q}</div><div class="quiz-a" id="qa-${i}">→ ${item.a}</div>`;
+      d.onclick=()=>document.getElementById(`qa-${i}`).classList.toggle('revealed');
+      qc.appendChild(d);
+    });
+  } else if (type==='fiche') {
+    const fv = document.getElementById('fiche-view'); fv.style.display='block';
+    fv.innerHTML = `<div style="font-family:'Syne',sans-serif;font-size:1.3rem;font-weight:800;margin-bottom:16px">${parsed.titre}</div>` +
+      parsed.sections.map(s=>`<div class="fiche-section"><h3>${s.h}</h3><pre>${s.body}</pre></div>`).join('') +
+      (parsed.phrase_magique?`<div class="fiche-section" style="border-color:rgba(124,92,252,0.5);background:var(--card-a)"><h3>⭐ Phrase Magique</h3><p style="font-style:italic">"${parsed.phrase_magique}"</p></div>`:'');
+  } else if (type==='quiz') {
+    const qv = document.getElementById('quiz-view'); qv.style.display='block';
+    const dc = {facile:'tag-green',moyen:'tag-orange',difficile:'tag-red'};
+    qv.innerHTML = `<div style="font-family:'Syne',sans-serif;font-weight:700;margin-bottom:14px">Quiz — ${parsed.questions.length} questions</div>` +
+      parsed.questions.map((q,i)=>`<div class="quiz-item" onclick="this.querySelector('.quiz-a').classList.toggle('revealed')"><div class="quiz-q" style="display:flex;gap:8px;align-items:center">Q${i+1}. ${q.q} <span class="tag ${dc[q.diff]||'tag-purple'}">${q.diff}</span></div><div class="quiz-a">→ ${q.a}</div></div>`).join('');
+  } else if (type==='mindmap') {
+    const mv = document.getElementById('mindmap-view'); mv.style.display='block';
+    mv.innerHTML = `<div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.2rem;margin-bottom:16px;color:var(--accent)">${parsed.titre}</div>` +
+      parsed.axes.map(a=>`<div class="fiche-section"><h3>▶ ${a.label}</h3><ul>${a.points.map(p=>`<li>${p}</li>`).join('')}</ul></div>`).join('');
+  }
+}
+
+function saveToHistory() {
+  if (!state.lastResult) return;
+  state.history.unshift({id:Date.now(),subject:state.lastSubject,date:new Date().toLocaleDateString('fr-FR'),result:state.lastResult});
+  if (state.history.length>15) state.history.pop();
+  save(); renderHistory(); showToast('💾 Sauvegardé !');
+}
+
+function renderHistory() {
+  const c = document.getElementById('history-list');
+  if (!state.history.length) { c.innerHTML='<div style="color:var(--muted);font-size:0.72rem;padding:10px 0">Aucune analyse sauvegardée</div>'; return; }
+  c.innerHTML = state.history.map(h=>`<div class="history-item" onclick="reloadHistory(${h.id})"><span style="color:var(--accent)">📄</span><div class="history-subject">${h.subject}</div><div class="history-date">${h.date}</div><span class="tag tag-purple">A+B+C</span></div>`).join('');
+}
+
+function reloadHistory(id) {
+  const h = state.history.find(x=>x.id===id); if (!h) return;
+  state.lastResult=h.result; state.lastSubject=h.subject;
+  renderCourseResult(h.result, h.result.type||'combo');
+  document.getElementById('course-result').style.display='block';
+  showToast('📂 Cours chargé !');
+}
+
+function sendToMemoire() {
+  if (!state.lastResult?.phrase_magique) return;
+  state.memoire.unshift({id:Date.now(),subject:state.lastSubject,phrase:state.lastResult.phrase_magique});
+  save(); showToast('🧠 Phrase magique ajoutée !');
+}
+
+// ── NOTES ──
+function addNoteManual() {
+  const matiere  = document.getElementById('note-matiere').value.trim();
+  const chapitre = document.getElementById('note-chapitre').value.trim();
+  const val      = parseFloat(document.getElementById('note-val').value);
+  const sur      = parseFloat(document.getElementById('note-sur').value)||20;
+  const coeff    = parseFloat(document.getElementById('note-coeff').value)||1;
+  const date     = document.getElementById('note-date').value;
+  if (!matiere||isNaN(val)) { showToast('⚠️ Matière et note requises !'); return; }
+  state.notes.unshift({id:Date.now(),matiere,chapitre:chapitre||'Évaluation',val,sur,coeff,date});
+  save(); renderNotes(); closeModal('modal-note'); showToast('📊 Note ajoutée !');
+}
+
+function handleNoteImage(e) {
+  const f=e.target.files[0]; if(!f) return;
+  const r=new FileReader();
+  r.onload=ev=>{state.noteImageData=ev.target.result.split(',')[1];const img=document.getElementById('note-img-preview');img.src=ev.target.result;img.style.display='block';};
+  r.readAsDataURL(f);
+}
+
+async function extractNotesFromImage() {
+  if (!state.noteImageData) { showToast('⚠️ Importe une image !'); return; }
+  document.getElementById('note-img-loading').style.display='block';
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:[
+        {type:'image',source:{type:'base64',media_type:'image/jpeg',data:state.noteImageData}},
+        {type:'text',text:`Lis ce screenshot de notes scolaires et extrais TOUTES les notes visibles. Retourne UNIQUEMENT ce JSON (sans markdown) :
+{"notes":[{"matiere":"Maths","chapitre":"Contrôle fonctions","val":14.5,"sur":20,"coeff":2,"date":"2024-03-15"}]}`}
+      ]}]})
+    });
+    const data=await resp.json();
+    const parsed=JSON.parse(data.content.map(i=>i.text||'').join('').replace(/```json|```/g,'').trim());
+    parsed.notes.forEach(n=>state.notes.unshift({id:Date.now()+Math.random(),...n}));
+    save(); renderNotes(); closeModal('modal-note-img');
+    showToast(`✅ ${parsed.notes.length} note(s) extraite(s) !`);
+  } catch(e) { showToast('❌ Erreur extraction !'); console.error(e); }
+  document.getElementById('note-img-loading').style.display='none';
+}
+
+function deleteNote(id) { state.notes=state.notes.filter(n=>n.id!==id); save(); renderNotes(); }
+
+function renderNotes() {
+  const grid=document.getElementById('notes-grid');
+  const empty=document.getElementById('notes-empty');
+  if (!state.notes.length) { grid.innerHTML=''; empty.style.display='block'; updateMoyenne(); return; }
+  empty.style.display='none';
+  grid.innerHTML=state.notes.map(n=>{
+    const pct=(n.val/n.sur)*20;
+    const cls=pct>=14?'note-good':pct>=10?'note-avg':'note-bad';
+    return `<div class="note-card">
+      <div class="note-date">${n.date||''}</div>
+      <div class="note-matiere">${n.matiere}</div>
+      <div class="note-value ${cls}">${n.val}<span style="font-size:1rem;color:var(--muted)">/${n.sur}</span></div>
+      <div style="font-size:0.75rem;color:var(--muted);margin-bottom:4px">${n.chapitre}</div>
+      <div class="note-coeff">Coeff. ${n.coeff}</div>
+      <button class="note-delete" onclick="deleteNote(${n.id})">🗑</button>
+    </div>`;
+  }).join('');
+  updateMoyenne();
+}
+
+function updateMoyenne() {
+  const el=document.getElementById('moyenne-val');
+  const bar=document.getElementById('moyenne-bar-fill');
+  const sub=document.getElementById('moyenne-sub');
+  if (!state.notes.length) { el.textContent='—'; bar.style.width='0%'; sub.textContent='Aucune note'; el.style.color='var(--muted)'; return; }
+  let pts=0,coeff=0;
+  state.notes.forEach(n=>{ pts+=(n.val/n.sur)*20*n.coeff; coeff+=n.coeff; });
+  const moy=pts/coeff;
+  el.textContent=moy.toFixed(2);
+  bar.style.width=(moy/20*100)+'%';
+  el.style.color=moy>=14?'var(--accent3)':moy>=10?'var(--accent4)':'var(--accent2)';
+  sub.textContent=`${state.notes.length} note(s) · coeff total ${coeff}`;
+}
+
+// ── DEVOIRS ──
+function addDevoirManual() {
+  const matiere=document.getElementById('dev-matiere').value.trim();
+  const deadline=document.getElementById('dev-deadline').value;
+  const title=document.getElementById('dev-title').value.trim();
+  const urgence=parseInt(document.getElementById('dev-urgence').value);
+  const type=document.getElementById('dev-type').value;
+  if (!title) { showToast('⚠️ Décris le devoir !'); return; }
+  state.devoirs.push({id:Date.now(),matiere:matiere||'?',deadline,title,urgence,type,done:false});
+  state.devoirs.sort((a,b)=>a.urgence-b.urgence||new Date(a.deadline)-new Date(b.deadline));
+  save(); renderDevoirs(); closeModal('modal-devoir'); showToast('📋 Devoir ajouté !');
+}
+
+function handleDevoirImage(e) {
+  const f=e.target.files[0]; if(!f) return;
+  const r=new FileReader();
+  r.onload=ev=>{state.devoirImageData=ev.target.result.split(',')[1];const img=document.getElementById('devoir-img-preview');img.src=ev.target.result;img.style.display='block';};
+  r.readAsDataURL(f);
+}
+
+async function extractDevoirsFromImage() {
+  if (!state.devoirImageData) { showToast('⚠️ Importe une image !'); return; }
+  document.getElementById('devoir-img-loading').style.display='block';
+  const today=new Date().toISOString().split('T')[0];
+  try {
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:[
+        {type:'image',source:{type:'base64',media_type:'image/jpeg',data:state.devoirImageData}},
+        {type:'text',text:`Aujourd'hui: ${today}. Lis ce screenshot d'agenda scolaire (Pronote ou autre).
+Extrais TOUS les devoirs. Pour chaque devoir, calcule l'urgence selon:
+- urgence 1 (rouge) = dans moins de 2 jours OU contrôle/interrogation
+- urgence 2 (orange) = dans 3-5 jours
+- urgence 3 (vert) = dans plus de 5 jours
+Un contrôle = urgence 1 même si c'est dans 5 jours.
+Retourne UNIQUEMENT ce JSON (sans markdown):
+{"devoirs":[{"matiere":"Maths","deadline":"2024-03-20","title":"description précise du devoir","urgence":1,"type":"Contrôle à préparer"}]}`}
+      ]}]})
+    });
+    const data=await resp.json();
+    const parsed=JSON.parse(data.content.map(i=>i.text||'').join('').replace(/```json|```/g,'').trim());
+    parsed.devoirs.forEach(d=>state.devoirs.push({id:Date.now()+Math.random(),...d,done:false}));
+    state.devoirs.sort((a,b)=>a.urgence-b.urgence||new Date(a.deadline)-new Date(b.deadline));
+    save(); renderDevoirs(); closeModal('modal-devoir-img');
+    showToast(`✅ ${parsed.devoirs.length} devoir(s) classés par urgence !`);
+  } catch(e) { showToast('❌ Erreur extraction !'); console.error(e); }
+  document.getElementById('devoir-img-loading').style.display='none';
+}
+
+function toggleDevoir(id) { const d=state.devoirs.find(x=>x.id===id); if(d){d.done=!d.done;save();renderDevoirs();} }
+function deleteDevoir(id) { state.devoirs=state.devoirs.filter(d=>d.id!==id); save(); renderDevoirs(); }
+function clearDoneDevoirs() { state.devoirs=state.devoirs.filter(d=>!d.done); save(); renderDevoirs(); }
+
+function getDaysLeft(deadline) {
+  if (!deadline) return null;
+  return Math.ceil((new Date(deadline)-new Date())/86400000);
+}
+
+function renderDevoirs() {
+  const list=document.getElementById('devoirs-list');
+  const empty=document.getElementById('devoirs-empty');
+  if (!state.devoirs.length) { list.innerHTML=''; empty.style.display='block'; return; }
+  empty.style.display='none';
+  const urgCls=['','urg-1','urg-2','urg-3'];
+  const scoreCls=['','score-high','score-med','score-low'];
+  const scoreLabel=['','🔴 URGENT','🟡 MOYEN','🟢 OK'];
+  list.innerHTML=state.devoirs.map(d=>{
+    const days=getDaysLeft(d.deadline);
+    const dStr=days!==null?(days<0?'⚠️ Passé':days===0?'Aujourd\'hui':`J-${days}`):'';
+    return `<div class="devoir-item ${d.done?'done':''}">
+      <div class="urgence-bar ${urgCls[d.urgence]||'urg-3'}"></div>
+      <div class="devoir-check ${d.done?'checked':''}" onclick="toggleDevoir(${d.id})">${d.done?'✓':''}</div>
+      <div class="devoir-body">
+        <div class="devoir-meta">
+          <span class="devoir-matiere">${d.matiere}</span>
+          <span class="tag tag-purple" style="font-size:0.58rem">${d.type||'Devoir'}</span>
+          ${dStr?`<span class="devoir-deadline">${dStr} · ${d.deadline||''}</span>`:''}
+        </div>
+        <div class="devoir-title">${d.title}</div>
+      </div>
+      <div class="devoir-score ${scoreCls[d.urgence]||'score-low'}">${scoreLabel[d.urgence]||''}</div>
+      <button class="devoir-del" onclick="deleteDevoir(${d.id})">🗑</button>
+    </div>`;
+  }).join('');
+}
+
+// ── TIMER ──
+let timerDuration=25*60,timerRemaining=25*60,timerRunning=false,timerInterval=null;
+function setTimer(min,btn){if(timerRunning)return;timerDuration=min*60;timerRemaining=timerDuration;updateTimerDisplay();document.querySelectorAll('.preset-btn').forEach(b=>b.classList.remove('selected'));btn.classList.add('selected');}
+function toggleTimer(){
+  if(timerRunning){clearInterval(timerInterval);timerRunning=false;document.getElementById('timer-btn').textContent='▶ Reprendre';}
+  else{timerRunning=true;document.getElementById('timer-btn').textContent='⏸ Pause';
+    timerInterval=setInterval(()=>{timerRemaining--;updateTimerDisplay();
+      if(timerRemaining<=0){clearInterval(timerInterval);timerRunning=false;state.stats.sessions++;state.stats.minutes+=Math.round(timerDuration/60);save();updateStats();document.getElementById('timer-btn').textContent='▶ Démarrer';showToast('🎉 Session terminée ! +'+Math.round(timerDuration/60)+' min');timerRemaining=timerDuration;updateTimerDisplay();}
+    },1000);}
+}
+function resetTimer(){clearInterval(timerInterval);timerRunning=false;timerRemaining=timerDuration;updateTimerDisplay();document.getElementById('timer-btn').textContent='▶ Démarrer';}
+function updateTimerDisplay(){const m=String(Math.floor(timerRemaining/60)).padStart(2,'0'),s=String(timerRemaining%60).padStart(2,'0');const d=document.getElementById('timer-display');d.textContent=m+':'+s;d.classList.toggle('warning',timerRemaining<60);document.getElementById('timer-progress').style.width=(timerRemaining/timerDuration*100)+'%';}
+
+// ── PRIORITIES ──
+function addPriority(){const n=document.getElementById('priority-name').value.trim(),t=document.getElementById('priority-time').value.trim();if(!n)return;state.priorities.push({id:Date.now(),name:n,time:t||'?',done:false});save();renderPriorities();document.getElementById('priority-name').value='';document.getElementById('priority-time').value='';}
+function togglePriority(id){const p=state.priorities.find(x=>x.id===id);if(p){p.done=!p.done;save();renderPriorities();}}
+function clearDonePriorities(){state.priorities=state.priorities.filter(p=>!p.done);save();renderPriorities();}
+function renderPriorities(){
+  const c=document.getElementById('priority-list');
+  if(!state.priorities.length){c.innerHTML='<div style="color:var(--muted);font-size:0.72rem;padding:8px 0">Ajoutes-en !</div>';return;}
+  const cols=['dot-high','dot-med','dot-low'];
+  c.innerHTML=state.priorities.map((p,i)=>`<div class="priority-item ${p.done?'done':''}"><div class="priority-dot ${cols[i%3]}"></div><div class="priority-name">${p.name}</div><div class="priority-time">${p.time}</div><div class="priority-done ${p.done?'checked':''}" onclick="togglePriority(${p.id})">${p.done?'✓':''}</div></div>`).join('');
+}
+function updateStats(){document.getElementById('stat-sessions').textContent=state.stats.sessions;document.getElementById('stat-minutes').textContent=state.stats.minutes;document.getElementById('stat-courses').textContent=state.stats.courses;document.getElementById('session-count').textContent=state.stats.sessions;}
+
+// ── MÉMOIRE ──
+function toggleAddMemoire(){const f=document.getElementById('add-memoire-form');f.style.display=f.style.display==='none'?'block':'none';}
+function addMemoire(){const s=document.getElementById('mem-subject').value.trim(),p=document.getElementById('mem-phrase').value.trim();if(!p)return;state.memoire.unshift({id:Date.now(),subject:s||'Général',phrase:p});save();renderMemoire();document.getElementById('mem-subject').value='';document.getElementById('mem-phrase').value='';document.getElementById('add-memoire-form').style.display='none';showToast('🧠 Phrase ajoutée !');}
+function deleteMemoire(id){state.memoire=state.memoire.filter(m=>m.id!==id);save();renderMemoire();}
+function copyMemoire(id,btn){const m=state.memoire.find(x=>x.id===id);if(!m)return;navigator.clipboard.writeText(m.phrase).then(()=>{btn.textContent='✓ Copié !';btn.classList.add('copied');setTimeout(()=>{btn.textContent='📋 Copier';btn.classList.remove('copied');},2000);});}
+function renderMemoire(){
+  const grid=document.getElementById('memoire-grid'),empty=document.getElementById('memoire-empty');
+  if(!state.memoire.length){grid.innerHTML='';empty.style.display='block';return;}
+  empty.style.display='none';
+  grid.innerHTML=state.memoire.map(m=>`<div class="memoire-card"><button class="delete-btn-abs" onclick="deleteMemoire(${m.id})">✕</button><div class="memoire-subject">${m.subject.toUpperCase()}</div><div class="memoire-phrase">"${m.phrase}"</div><div class="memoire-actions"><button class="copy-btn" onclick="copyMemoire(${m.id},this)">📋 Copier</button></div></div>`).join('');
+}
+function genMemoireFromLast(){if(!state.lastResult?.phrase_magique){showToast('⚠️ Analyse d\'abord un cours !');return;}sendToMemoire();renderMemoire();}
+
+// ── MODALS ──
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');}));
+
+// ── TOAST ──
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800);}
+
+// ── INIT ──
+document.getElementById('note-date').value=new Date().toISOString().split('T')[0];
+document.getElementById('dev-deadline').value=new Date().toISOString().split('T')[0];
+renderHistory();renderPriorities();renderMemoire();renderNotes();renderDevoirs();updateStats();updateTimerDisplay();updateMoyenne();
+</script>
+</body>
+</html>
